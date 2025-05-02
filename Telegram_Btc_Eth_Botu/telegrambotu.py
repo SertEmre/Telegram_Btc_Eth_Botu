@@ -1,6 +1,5 @@
+import asyncio
 import requests
-import schedule
-import time
 import os
 from dotenv import load_dotenv
 from telegram import Bot
@@ -8,11 +7,11 @@ from telegram import Bot
 load_dotenv()
 
 TOKEN = os.getenv("TOKEN")
-CHAT_ID = os.getenv("CHAT_ID")
+CHAT_ID = int(os.getenv("CHAT_ID"))  
 
 bot = Bot(token=TOKEN)
 
-def get_prices():
+async def get_prices():
     url = 'https://api.coingecko.com/api/v3/simple/price'
     params = {
         "ids": "bitcoin,ethereum,solana,binancecoin,ripple,avalanche-2", 
@@ -36,10 +35,10 @@ def get_prices():
               f"⚫️ XRP (XRP): ${xrp}\n" \
               f"🔴 Avalanche (AVAX): ${avax}"
 
-    bot.send_message(chat_id=CHAT_ID, text=message)
-schedule.every().day.at("09:00").do(get_prices)
-schedule.every().day.at("21:00").do(get_prices)
+    try:
+        await bot.send_message(chat_id=CHAT_ID, text=message)
+        print("Mesaj gönderildi ✅")
+    except Exception as e:
+        print("Mesaj gönderilemedi ❌", e)
 
-while True:
-    schedule.run_pending()
-    time.sleep(60)
+asyncio.run(get_prices())
